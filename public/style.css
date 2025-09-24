@@ -94,6 +94,25 @@ body {
   box-shadow: none;
 }
 
+/* Code block styling */
+.message pre {
+  background-color: #f4f4f4;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-family: monospace;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-x: auto;
+  margin-top: 8px;
+}
+
+.message code {
+  display: block;
+  border-left: 4px solid #25d366;
+  padding-left: 12px;
+}
+
 #input-area {
   display: flex;
   align-items: center;
@@ -125,6 +144,7 @@ body {
 #fileUpload {
   margin-left: 10px;
 }
+
 @media (max-width: 600px) {
   #login {
     width: 90%;
