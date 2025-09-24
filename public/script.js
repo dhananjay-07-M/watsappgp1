@@ -1,5 +1,4 @@
 const socket = io();
-
 let username = '';
 
 function joinChat() {
@@ -19,11 +18,11 @@ function sendMessage() {
   const message = msgInput.value.trim();
   const file = fileInput.files[0];
 
-  // Send file if exists
   if (file) {
     const reader = new FileReader();
     reader.onload = () => {
       socket.emit('sendFile', {
+        user: username,
         fileName: file.name,
         fileType: file.type,
         fileData: reader.result
@@ -33,21 +32,28 @@ function sendMessage() {
     reader.readAsDataURL(file);
   }
 
-  // Send text message if exists
   if (message !== '') {
-    socket.emit('sendMessage', message);
+    socket.emit('sendMessage', { user: username, text: message });
     msgInput.value = '';
   }
 }
 
 function createMessageHTML({ user, text, type = 'message' }) {
   const isUser = user === username;
+
   if (type === 'system') {
     return `<div class="message system">${escapeHTML(text)}</div>`;
   }
+
+  const isCode = text.includes('\n') || text.includes('  ') || text.includes('\t');
+
+  const formattedText = isCode
+    ? `<pre><code>${escapeHTML(text)}</code></pre>`
+    : escapeHTML(text);
+
   return `
     <div class="message ${isUser ? 'user' : 'other'}">
-      <strong>${escapeHTML(user)}:</strong> ${escapeHTML(text)}
+      <strong>${escapeHTML(user)}:</strong> ${formattedText}
     </div>
   `;
 }
@@ -81,25 +87,3 @@ function escapeHTML(str) {
 }
 
 // Listeners
-socket.on('message', data => {
-  const messagesEl = document.getElementById('messages');
-  messagesEl.insertAdjacentHTML('beforeend', createMessageHTML(data));
-  messagesEl.lastElementChild.scrollIntoView();
-});
-
-socket.on('file', data => {
-  const messagesEl = document.getElementById('messages');
-  messagesEl.insertAdjacentHTML('beforeend', createFileMessageHTML(data));
-  messagesEl.lastElementChild.scrollIntoView();
-});
-
-socket.on('system', text => {
-  const messagesEl = document.getElementById('messages');
-  messagesEl.insertAdjacentHTML('beforeend', createMessageHTML({ text, type: 'system' }));
-  messagesEl.lastElementChild.scrollIntoView();
-});
-
-// Send message on Enter key press
-document.getElementById('messageInput').addEventListener('keydown', e => {
-  if (e.key === 'Enter') sendMessage();
-});
