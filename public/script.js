@@ -21,7 +21,7 @@ function sendMessage() {
   if (file) {
     const reader = new FileReader();
     reader.onload = () => {
-      socket.emit('sendFile', {
+      socket.emit('file', {
         user: username,
         fileName: file.name,
         fileType: file.type,
@@ -33,7 +33,7 @@ function sendMessage() {
   }
 
   if (message !== '') {
-    socket.emit('sendMessage', { user: username, text: message });
+    socket.emit('message', { user: username, text: message });
     msgInput.value = '';
   }
 }
@@ -87,4 +87,25 @@ function escapeHTML(str) {
 }
 
 // Listeners
-socket.on
+socket.on('message', data => {
+  const messagesEl = document.getElementById('messages');
+  messagesEl.insertAdjacentHTML('beforeend', createMessageHTML(data));
+  messagesEl.lastElementChild.scrollIntoView();
+});
+
+socket.on('file', data => {
+  const messagesEl = document.getElementById('messages');
+  messagesEl.insertAdjacentHTML('beforeend', createFileMessageHTML(data));
+  messagesEl.lastElementChild.scrollIntoView();
+});
+
+socket.on('system', text => {
+  const messagesEl = document.getElementById('messages');
+  messagesEl.insertAdjacentHTML('beforeend', createMessageHTML({ text, type: 'system' }));
+  messagesEl.lastElementChild.scrollIntoView();
+});
+
+// Send message on Enter key press
+document.getElementById('messageInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMessage();
+});
